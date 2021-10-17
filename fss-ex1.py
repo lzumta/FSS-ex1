@@ -62,7 +62,7 @@ def downloadImage(URL, name):
     page = requests.get(URL)
     with open(name, 'wb') as f:
         f.write(page.content)
-
+    return
 
 
 if __name__ == "__main__":
@@ -128,18 +128,18 @@ if __name__ == "__main__":
     sizes = ["UZH Logo"]
     X_axis = np.arange(len(sizes))
 
-    downloadImage('https://www.uzh.ch/uzh/authoring/images/uzh_logo_e_pos_web_assoc.jpg', "uzhLogo.jpg")
+    ipfs_uzhLogo_http = downloadImage('https://www.uzh.ch/uzh/authoring/images/uzh_logo_e_pos_web_assoc.jpg', "uzhLogo.jpg")
     ipfs_uzhLogo_serialize, hash_uzhLogo = serialize('uzhLogo.jpg')
     ipfs_uzhLogo_deserialize = deserialize(hash_uzhLogo)
 
     plt.figure()
     plt.plot(sizes, ipfs_uzhLogo_serialize, 'ro')
-    plt.plot(sizes, ipfs_uzhLogo_deserialize, 'bo')
+    plt.plot(sizes, ipfs_uzhLogo_http, 'bo')
     plt.title('Deserialization Time Comparison of Image File')
     plt.xlabel('')
     plt.ylabel('avg duration (s) of 5 runs')
     plt.bar(X_axis-0.2, ipfs_uzhLogo_serialize, 0.4, edgecolor="gray", label="Serialize", color="red")
-    plt.bar(X_axis+0.2, ipfs_uzhLogo_deserialize, 0.4, edgecolor="gray", label="Deserialize", color="blue")
+    plt.bar(X_axis+0.2, ipfs_uzhLogo_http, 0.4, edgecolor="gray", label="Deserialize", color="blue")
     plt.xticks(X_axis, sizes)
     plt.legend()
     plt.show()
