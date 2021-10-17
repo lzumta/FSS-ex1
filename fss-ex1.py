@@ -2,6 +2,7 @@ import requests
 from timeit import default_timer as timer
 import numpy as np
 import matplotlib.pyplot as plt
+import urllib
 
 import ipfshttpclient
 # import ipfsapi  # outdated
@@ -26,6 +27,7 @@ def downloadHTTP(URL, filename):
     avrg_duration = sum(durations)/n
     return avrg_duration
 
+
 def serialize(file):
     durations = []
     n = 10
@@ -39,6 +41,7 @@ def serialize(file):
         durations.append(duration)
     avrg_duration = sum(durations)/n
     return avrg_duration, res["Hash"]
+
 
 def deserialize(contentId):
     durations = []
@@ -54,6 +57,11 @@ def deserialize(contentId):
     avrg_duration = sum(durations)/n
     return avrg_duration
 
+
+def downloadImage(URL, name):
+    page = requests.get(URL)
+    with open(name, 'wb') as f:
+        f.write(page.content)
 
 
 
@@ -76,15 +84,13 @@ if __name__ == "__main__":
     avg_ipfs_deserialize = [ipfs_1mb_deserialize,ipfs_100mb_deserialize,ipfs_1000mb_deserialize]
 
 
-    # ************ PLOT ***********
-
     # Compare Serialization Algorithms (2.2 point 3 in the exercise sheet)
     plt.figure()
     plt.plot(sizes,avg_ipfs_serialize, 'ro')
     plt.plot(sizes,avg_ipfs_deserialize, 'bo')
     plt.title('Duration Comparison Serialization and Deserialization')
     plt.xlabel('file size (MB)')
-    plt.ylabel('duration (s)')
+    plt.ylabel('avg duration (s) of 10 runs')
     for a, b in zip(sizes, avg_ipfs_serialize):
         b = round(b, 3)
         plt.text(a, b, str(b))
@@ -97,13 +103,14 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
+
     # Compare IPFS with HTTP on deserialization (2.2 point 5 in the exercise sheet)
     plt.figure()
     plt.plot(sizes,avg_http, 'ro')
     plt.plot(sizes,avg_ipfs_deserialize, 'bo')
     plt.title('Duration Comparison HTTP and IPFS')
     plt.xlabel('file size (MB)')
-    plt.ylabel('duration (s)')
+    plt.ylabel('avg duration (s) of 5 runs')
     for a, b in zip(sizes, avg_http):
         b = round(b, 3)
         plt.text(a, b, str(b))
@@ -112,6 +119,27 @@ if __name__ == "__main__":
         plt.text(a, b, str(b))
     plt.bar(X_axis-0.2, avg_http, 0.4, edgecolor="gray", label="HTTP", color="red")
     plt.bar(X_axis+0.2, avg_ipfs_deserialize, 0.4, edgecolor="gray", label="IPFS", color="blue")
+    plt.xticks(X_axis, sizes)
+    plt.legend()
+    plt.show()
+
+
+    # Download unstructured data (2.2 point 4 in the exercise sheet)
+    sizes = ["UZH Logo"]
+    X_axis = np.arange(len(sizes))
+
+    downloadImage('https://www.uzh.ch/uzh/authoring/images/uzh_logo_e_pos_web_assoc.jpg', "uzhLogo.jpg")
+    ipfs_uzhLogo_serialize, hash_uzhLogo = serialize('uzhLogo.jpg')
+    ipfs_uzhLogo_deserialize = deserialize(hash_uzhLogo)
+
+    plt.figure()
+    plt.plot(sizes, ipfs_uzhLogo_serialize, 'ro')
+    plt.plot(sizes, ipfs_uzhLogo_deserialize, 'bo')
+    plt.title('Deserialization Time Comparison of Image File')
+    plt.xlabel('')
+    plt.ylabel('avg duration (s) of 5 runs')
+    plt.bar(X_axis-0.2, ipfs_uzhLogo_serialize, 0.4, edgecolor="gray", label="Serialize", color="red")
+    plt.bar(X_axis+0.2, ipfs_uzhLogo_deserialize, 0.4, edgecolor="gray", label="Deserialize", color="blue")
     plt.xticks(X_axis, sizes)
     plt.legend()
     plt.show()
