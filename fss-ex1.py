@@ -7,13 +7,19 @@ import ipfshttpclient
 # import ipfsapi  # outdated
 
 
-def downloadHTTP(URL):
+def downloadHTTP(URL, filename):
     durations = []
     n = 5
     for i in range(n):
         start_time = timer()
         r = requests.get(URL, allow_redirects=True)
         end_time = timer()
+        if i == 0:
+            with open(filename, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+                f.close()
+        i += 1
         duration = end_time - start_time
         print(duration)
         durations.append(duration)
@@ -54,9 +60,9 @@ def deserialize(contentId):
 if __name__ == "__main__":
     sizes = ["1","100","1000"]
     X_axis = np.arange(len(sizes))
-    http_1mb = downloadHTTP('https://filesender.switch.ch/filesender2/download.php?token=6de159f9-55ba-4661-9329-2cca0f4c9e67&files_ids=26095')
-    http_100mb = downloadHTTP('https://filesender.switch.ch/filesender2/download.php?token=d6cba8dd-b844-47fb-aefe-2404ca503146&files_ids=26090')
-    http_1000mb = downloadHTTP('https://filesender.switch.ch/filesender2/download.php?token=47471388-24bf-48b7-a28b-0a270c0f40c3&files_ids=26089')
+    http_1mb = downloadHTTP('https://filesender.switch.ch/filesender2/download.php?token=6de159f9-55ba-4661-9329-2cca0f4c9e67&files_ids=26095', "1mb.txt")
+    http_100mb = downloadHTTP('https://filesender.switch.ch/filesender2/download.php?token=d6cba8dd-b844-47fb-aefe-2404ca503146&files_ids=26090', "100mb.txt")
+    http_1000mb = downloadHTTP('https://filesender.switch.ch/filesender2/download.php?token=47471388-24bf-48b7-a28b-0a270c0f40c3&files_ids=26089', "1gb.txt")
     avg_http = [http_1mb,http_100mb,http_1000mb]
 
     ipfs_1mb_serialize, hash_1mb = serialize('1mb.txt')
